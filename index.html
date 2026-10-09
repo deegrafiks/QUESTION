@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Yes or No</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background: #f4f4f4;
+    }
+    .box {
+      background: white;
+      padding: 30px;
+      border-radius: 20px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+    #progress {
+      color: #666;
+      font-size: 14px;
+    }
+    button {
+      margin: 10px;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    #yesBtn {
+      background: #4caf50;
+      color: white;
+    }
+    #noBtn {
+      background: #f44336;
+      color: white;
+    }
+    #noBtn.dodging {
+      position: fixed;
+      z-index: 1;
+    }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <p id="progress"></p>
+    <h2 id="question"></h2>
+    <button id="yesBtn">Yes</button>
+    <button id="noBtn">No</button>
+    <p id="answer" aria-live="polite"></p>
+  </div>
+
+  <script>
+    const questions = [
+      "Are you happy today?",
+      "Did you get enough rest?",
+      "Would you like to do something fun today?",
+      "Do you enjoy spending time outdoors?",
+      "Are you looking forward to something this week?",
+      "Would you be my student?",
+    ];
+
+    const yesBtn = document.getElementById("yesBtn");
+    const noBtn = document.getElementById("noBtn");
+    const answer = document.getElementById("answer");
+    const question = document.getElementById("question");
+    const progress = document.getElementById("progress");
+    let questionIndex = 0;
+    let noMoveTimer = null;
+
+    function showQuestion() {
+      question.textContent = questions[questionIndex];
+      progress.textContent = `Question ${questionIndex + 1} of ${questions.length}`;
+      const isFinalQuestion = questionIndex === questions.length - 1;
+      noBtn.classList.toggle("dodging", isFinalQuestion);
+      noBtn.tabIndex = isFinalQuestion ? -1 : 0;
+
+      if (isFinalQuestion) {
+        moveNoButton();
+        noMoveTimer = window.setInterval(moveNoButton, 450);
+      } else if (noMoveTimer !== null) {
+        window.clearInterval(noMoveTimer);
+        noMoveTimer = null;
+      }
+    }
+
+    function handleAnswer(response) {
+      answer.textContent = `You answered: ${response}`;
+      questionIndex = (questionIndex + 1) % questions.length;
+      showQuestion();
+    }
+
+    function moveNoButton() {
+      const buttonRect = noBtn.getBoundingClientRect();
+      const maxLeft = Math.max(0, window.innerWidth - buttonRect.width);
+      const maxTop = Math.max(0, window.innerHeight - buttonRect.height);
+      const left = Math.random() * maxLeft;
+      const top = Math.random() * maxTop;
+      noBtn.style.left = `${left}px`;
+      noBtn.style.top = `${top}px`;
+    }
+
+    yesBtn.addEventListener("click", () => {
+      if (questionIndex === questions.length - 1) {
+        const message = encodeURIComponent("I'll be your student");
+        window.open(`https://wa.me/2348081819726?text=${message}`, "_blank", "noopener,noreferrer");
+        return;
+      }
+      handleAnswer("Yes");
+    });
+    noBtn.addEventListener("pointerdown", (event) => {
+      if (questionIndex === questions.length - 1) {
+        event.preventDefault();
+        moveNoButton();
+      }
+    });
+    noBtn.addEventListener("click", (event) => {
+      if (questionIndex === questions.length - 1) {
+        event.preventDefault();
+        return;
+      }
+      handleAnswer("No");
+    });
+
+    showQuestion();
+  </script>
+</body>
+</html>
